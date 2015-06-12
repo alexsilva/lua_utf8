@@ -86,26 +86,58 @@ return {
     end,
     encode = function(targs)
         return %_encode(targs)
+    end,
+    decode = function(s, i)
+        local a = strbyte(s, i + 1)
+        local b = strbyte(s, i + 2)
+        local c = strbyte(s, i + 3)
+        local d = strbyte(s, i + 4)
+        if a == nil then
+            return nil
+        elseif a <= 127 then
+            return i + 1, a
+        elseif 194 <= a then
+            if a <= 223 then
+                if b == nil or b < 128 or 191 < b then return nil end
+                local a = mod(a, 32) * 64
+                local b = mod(b, 64)
+                return i + 2, a + b
+        elseif a <= 239 then
+            if a <= 236 then
+                if a == 224 then
+                  if b == nil or b < 160 or 191 < b then return nil end
+                else
+                  if b == nil or b < 128 or 191 < b then return nil end
+                end
+            else
+                if a == 237 then
+                    if b == nil or b < 128 or 159 < b then return nil end
+                else
+                    if b == nil or b < 128 or 191 < b then return nil end
+                end
+            end
+            if c == nil or c < 128 or 191 < c then return nil end
+                local a = mod(a, 16) * 4096
+                local b = mod(b, 64) * 64
+                local c = mod(c, 64)
+                return i + 3, a + b + c
+            elseif a <= 244 then
+                if a == 240 then
+                    if b == nil or b < 144 or 191 < b then return nil end
+                elseif a <= 243 then
+                    if b == nil or b < 128 or 191 < b then return nil end
+                else
+                    if b == nil or b < 128 or 143 < b then return nil end
+                end
+                    if c == nil or c < 128 or 191 < c then return nil end
+                    if d == nil or d < 128 or 191 < d then return nil end
+                    local a = mod(a,  8) * 262144
+                    local b = mod(b, 64) * 4096
+                    local c = mod(c, 64) * 64
+                    local d = mod(d, 64)
+                return i + 4, a + b + c + d
+            end
+        end
+        return nil
     end
-    -- got decode from http://lua-users.org/wiki/LuaUnicode
---     decode = function(s)
---         assert(type(s) == "string")
---         local res, seq, val = {}, 0, nil
---         for i = 1, #s do
---             local c = string.byte(s, i)
---             if seq == 0 then
---                 table.insert(res, val)
---                 seq = c < 0x80 and 1 or c < 0xE0 and 2 or c < 0xF0 and 3 or
---                       c < 0xF8 and 4 or c < 0xFC and 5 or c < 0xFE and 6 or
---                       error("invalid UTF-8 character sequence")
---                 val = bit32.band(c, 2^(8-seq) - 1)
---             else
---                 val = bit32.bor(bit32.lshift(val, 6), bit32.band(c, 0x3F))
---             end
---             seq = seq - 1
---         end
---         table.insert(res, val)
---         --table.insert(res, 0)
---         return res
---     end
 }
