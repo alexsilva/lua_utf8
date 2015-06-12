@@ -88,10 +88,10 @@ return {
         return %_encode(targs)
     end,
     decode = function(s, i)
-        local a = strbyte(s, i + 1)
-        local b = strbyte(s, i + 2)
-        local c = strbyte(s, i + 3)
-        local d = strbyte(s, i + 4)
+        local a = strbyte(s, i)
+        local b = strbyte(s, i + 1)
+        local c = strbyte(s, i + 2)
+        local d = strbyte(s, i + 3)
         if a == nil then
             return nil
         elseif a <= 127 then
