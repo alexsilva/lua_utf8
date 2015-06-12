@@ -72,6 +72,56 @@ local _encode = function(targ)
     return str.s
 end
 
+local _decode = function(i, a, b, c, d)
+    if a == nil then
+        return nil
+    elseif a <= 127 then
+        return i + 1, a
+    elseif 194 <= a then
+        if a <= 223 then
+            if b == nil or b < 128 or 191 < b then return nil end
+            local a = mod(a, 32) * 64
+            local b = mod(b, 64)
+            return i + 2, a + b
+    elseif a <= 239 then
+        if a <= 236 then
+            if a == 224 then
+              --if b == nil or b < 160 or 191 < b then return nil end
+            else
+              --if b == nil or b < 128 or 191 < b then return nil end
+            end
+        else
+            if a == 237 then
+                --if b == nil or b < 128 or 159 < b then return nil end
+            else
+                --if b == nil or b < 128 or 191 < b then return nil end
+            end
+        end
+            --if c == nil or c < 128 or 191 < c then return nil end
+            local a = mod(a, 16) * 4096
+            local b = mod(b, 64) * 64
+            local c = mod(c, 64)
+            return i + 3, a + b + c
+        elseif a <= 244 then
+            if a == 240 then
+                --if b == nil or b < 144 or 191 < b then return nil end
+            elseif a <= 243 then
+                --if b == nil or b < 128 or 191 < b then return nil end
+            else
+                --if b == nil or b < 128 or 143 < b then return nil end
+            end
+                --if c == nil or c < 128 or 191 < c then return nil end
+                --if d == nil or d < 128 or 191 < d then return nil end
+                local a = mod(a,  8) * 262144
+                local b = mod(b, 64) * 4096
+                local c = mod(c, 64) * 64
+                local d = mod(d, 64)
+            return i + 4, a + b + c + d
+        end
+    end
+    return nil
+end
+
 return {
     longEncode = function (...)
         local str = {s = ''}
@@ -94,52 +144,9 @@ return {
         if strsize > i + 0 then b = strbyte(s, i + 1) end -- byte or nil
         if strsize > i + 1 then c = strbyte(s, i + 2) end -- byte or nil
         if strsize > i + 2 then d = strbyte(s, i + 3) end -- byte or nil
-        if a == nil then
-            return nil
-        elseif a <= 127 then
-            return i + 1, a
-        elseif 194 <= a then
-            if a <= 223 then
-                if b == nil or b < 128 or 191 < b then return nil end
-                local a = mod(a, 32) * 64
-                local b = mod(b, 64)
-                return i + 2, a + b
-        elseif a <= 239 then
-            if a <= 236 then
-                if a == 224 then
-                  if b == nil or b < 160 or 191 < b then return nil end
-                else
-                  if b == nil or b < 128 or 191 < b then return nil end
-                end
-            else
-                if a == 237 then
-                    if b == nil or b < 128 or 159 < b then return nil end
-                else
-                    if b == nil or b < 128 or 191 < b then return nil end
-                end
-            end
-            if c == nil or c < 128 or 191 < c then return nil end
-                local a = mod(a, 16) * 4096
-                local b = mod(b, 64) * 64
-                local c = mod(c, 64)
-                return i + 3, a + b + c
-            elseif a <= 244 then
-                if a == 240 then
-                    if b == nil or b < 144 or 191 < b then return nil end
-                elseif a <= 243 then
-                    if b == nil or b < 128 or 191 < b then return nil end
-                else
-                    if b == nil or b < 128 or 143 < b then return nil end
-                end
-                    if c == nil or c < 128 or 191 < c then return nil end
-                    if d == nil or d < 128 or 191 < d then return nil end
-                    local a = mod(a,  8) * 262144
-                    local b = mod(b, 64) * 4096
-                    local c = mod(c, 64) * 64
-                    local d = mod(d, 64)
-                return i + 4, a + b + c + d
-            end
-        end
-        return nil
+
+        local x, y = %_decode(i, a, b, c, d)
+
+        return x, y
     end
 }
