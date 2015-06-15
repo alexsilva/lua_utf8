@@ -1,4 +1,3 @@
-bit32 = bit32 or bit
 
 local _longEncode = function(codepoint)
     local chars = ""
@@ -22,18 +21,18 @@ local _longEncode = function(codepoint)
     --        11100000 - 10100100 - ...
     --
     while codepoint > topspace do -- as long as there's too much for the top
-        local derp = bit32.bor(bit32.band(codepoint, 63), 128)
+        local derp = bor(band(codepoint, 63), 128)
         chars = strchar(derp) .. chars
 
-        codepoint = bit32.blogic_rshift(codepoint,6)
+        codepoint = brshift(codepoint,6)
 
         trailers = trailers + 1
-        topspace = bit32.blogic_rshift(topspace,1)
+        topspace = brshift(topspace,1)
     end
 
     -- is there a better way to make 0xFFFF0000 from 4 than lshift/rshift?
-    local mask = bit32.blshift(bit32.blogic_rshift(255, 7-trailers), 7-trailers)
-    local last = bit32.bor(mask, codepoint)
+    local mask = blshift(brshift(255, 7-trailers), 7-trailers)
+    local last = bor(mask, codepoint)
 
     return strchar(last) .. chars
 end
@@ -50,19 +49,19 @@ local _encode = function(targ)
             derp = strchar(codepoint)
 
         elseif codepoint < 2048 then
-            derp = strchar(bit32.bor(bit32.blogic_rshift(codepoint,6), 192)) ..
-                   strchar(bit32.bor(bit32.band(codepoint, 63), 128))
+            derp = strchar(bor(brshift(codepoint,6), 192)) ..
+                   strchar(bor(band(codepoint, 63), 128))
 
         elseif codepoint < 65536 then
-            derp = strchar(bit32.bor(bit32.blogic_rshift(codepoint,12), 224)) ..
-                   strchar(bit32.bor(bit32.band(bit32.blogic_rshift(codepoint,6), 63), 128)) ..
-                   strchar(bit32.bor(bit32.band(codepoint, 63), 128))
+            derp = strchar(bor(brshift(codepoint,12), 224)) ..
+                   strchar(bor(band(brshift(codepoint,6), 63), 128)) ..
+                   strchar(bor(band(codepoint, 63), 128))
 
         elseif codepoint < 2097152 then
-            derp = strchar(bit32.bor(bit32.blogic_rshift(codepoint, 18), 240)) ..
-                   strchar(bit32.bor(bit32.band(bit32.blogic_rshift(codepoint,12), 63), 128)) ..
-                   strchar(bit32.bor(bit32.band(bit32.blogic_rshift(codepoint,6), 63), 128)) ..
-                   strchar(bit32.bor(bit32.band(codepoint, 63), 128))
+            derp = strchar(bor(brshift(codepoint, 18), 240)) ..
+                   strchar(bor(band(brshift(codepoint,12), 63), 128)) ..
+                   strchar(bor(band(brshift(codepoint,6), 63), 128)) ..
+                   strchar(bor(band(codepoint, 63), 128))
         else
             -- alpha centauri?!
             derp = %longEncode(codepoint)
